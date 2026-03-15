@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mathe Trainer – Längeneinheiten umrechnen</title>
+  <style>
+    :root {
+      --bg1: #6a5af9;
+      --bg2: #24c6dc;
+      --card: #ffffff;
+      --text: #1f2a44;
+      --muted: #5b6580;
+      --correct: #1e9e55;
+      --incorrect: #d63d5c;
+      --accent: #ffb703;
+      --accent2: #ff7b54;
+      --border: rgba(31, 42, 68, 0.14);
+      --shadow: 0 18px 40px rgba(32, 44, 84, 0.18);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      background: linear-gradient(135deg, var(--bg1), var(--bg2));
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 860px;
+      background: var(--card);
+      border: 4px solid rgba(255,255,255,0.35);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,183,3,0.08), rgba(255,123,84,0.07));
+      pointer-events: none;
+    }
+
+    .content {
+      position: relative;
+      padding: 28px;
+    }
+
+    .badge {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: white;
+      font-weight: bold;
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-size: 0.95rem;
+      margin-bottom: 10px;
+      box-shadow: 0 6px 14px rgba(255, 123, 84, 0.25);
+    }
+
+    h1 {
+      margin: 0 0 10px 0;
+      font-size: clamp(1.9rem, 3vw, 2.6rem);
+      line-height: 1.15;
+    }
+
+    .intro {
+      margin: 0 0 22px 0;
+      font-size: 1.05rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .top-row {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .counter {
+      font-weight: bold;
+      font-size: 1.05rem;
+    }
+
+    .score {
+      background: #f3f7ff;
+      border: 2px solid #d9e5ff;
+      border-radius: 14px;
+      padding: 10px 14px;
+      font-weight: bold;
+      color: #3657b7;
+    }
+
+    .progress-wrap {
+      margin-bottom: 24px;
+    }
+
+    .progress-track {
+      height: 18px;
+      width: 100%;
+      background: #e7eeff;
+      border-radius: 999px;
+      overflow: hidden;
+      border: 2px solid #d6e2ff;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #47d16c, #2ab7ca, #6a5af9);
+      border-radius: 999px;
+      transition: width 0.3s ease;
+    }
+
+    .task-box {
+      background: linear-gradient(180deg, #ffffff, #f8fbff);
+      border: 3px solid #dce8ff;
+      border-radius: 24px;
+      padding: 26px 20px;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .task-label {
+      font-size: 1rem;
+      color: var(--muted);
+      margin-bottom: 16px;
+      font-weight: bold;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    #task {
+      font-size: clamp(1.55rem, 2.5vw, 2.2rem);
+      font-weight: bold;
+      line-height: 1.5;
+    }
+
+    .answer-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+
+    input[type="text"] {
+      width: 210px;
+      max-width: 100%;
+      padding: 14px 16px;
+      font-size: 1.25rem;
+      border-radius: 16px;
+      border: 3px solid #cfe0ff;
+      text-align: center;
+      outline: none;
+      transition: border-color 0.2s ease, transform 0.2s ease;
+    }
+
+    input[type="text"]:focus {
+      border-color: #6a5af9;
+      transform: translateY(-1px);
+    }
+
+    .unit-tag {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 72px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      background: #eef3ff;
+      border: 2px solid #d7e3ff;
+      color: #3657b7;
+    }
+
+    #feedback {
+      min-height: 34px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      text-align: center;
+      margin: 18px 0 8px;
+    }
+
+    .correct { color: var(--correct); }
+    .incorrect { color: var(--incorrect); }
+
+    .button-row {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    button {
+      border: none;
+      border-radius: 18px;
+      padding: 14px 20px;
+      font-size: 1.05rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.15s ease, opacity 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 10px 20px rgba(80, 98, 173, 0.18);
+    }
+
+    button:hover { transform: translateY(-2px); }
+    button:active { transform: translateY(0); }
+
+    #check-button {
+      background: linear-gradient(135deg, #6a5af9, #4f8cff);
+      color: white;
+    }
+
+    #next-button, #restart-button {
+      background: linear-gradient(135deg, #ffb703, #ff7b54);
+      color: white;
+    }
+
+    .results-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    .result-chip {
+      min-width: 54px;
+      padding: 10px 12px;
+      border-radius: 999px;
+      font-weight: bold;
+      text-align: center;
+      border: 2px solid transparent;
+      background: #eef3ff;
+      color: #4f5d7a;
+    }
+
+    .result-chip.correct {
+      background: #e7f8ee;
+      color: var(--correct);
+      border-color: #bfe8cf;
+    }
+
+    .result-chip.incorrect {
+      background: #ffe9ee;
+      color: var(--incorrect);
+      border-color: #f7c2ce;
+    }
+
+    #summary {
+      margin-top: 8px;
+      text-align: center;
+      font-size: 1.35rem;
+      font-weight: bold;
+    }
+
+    #detail-list {
+      margin-top: 22px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .detail-item {
+      background: #f8fbff;
+      border: 2px solid #dce8ff;
+      border-radius: 18px;
+      padding: 14px 16px;
+      line-height: 1.5;
+    }
+
+    .detail-item strong {
+      display: inline-block;
+      min-width: 100px;
+    }
+
+    .footer {
+      text-align: center;
+      font-size: 0.82rem;
+      color: rgba(31, 42, 68, 0.72);
+      margin-top: 24px;
+    }
+
+    @media (max-width: 640px) {
+      .content { padding: 20px; }
+      .task-box { padding: 22px 14px; }
+      input[type="text"] { width: 100%; }
+      .answer-row { flex-direction: column; }
+      .unit-tag { min-width: 110px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="content">
+      <div class="badge">🌈 Mathe Trainer</div>
+      <h1>Längeneinheiten umrechnen</h1>
+      <p class="intro">
+        Rechne die Längeneinheiten um. Schreibe die Aufgabe zuerst auf dein Blatt und gib danach deine Lösung ein.
+        Verwendet werden <strong>mm, cm, dm, m, km</strong>.
+      </p>
+
+      <div class="top-row">
+        <div class="counter" id="counter">Aufgabe 1 von 10</div>
+        <div class="score" id="score">Richtig: 0</div>
+      </div>
+
+      <div class="progress-wrap">
+        <div class="progress-track">
+          <div class="progress-bar" id="progress-bar"></div>
+        </div>
+      </div>
+
+      <div id="task-container">
+        <div class="task-box">
+          <div class="task-label">Deine Aufgabe</div>
+          <div id="task"></div>
+          <div class="answer-row">
+            <input type="text" id="answer" placeholder="Ergebnis eingeben" autocomplete="off" />
+            <div class="unit-tag" id="target-unit-display">cm</div>
+          </div>
+        </div>
+
+        <div id="feedback"></div>
+
+        <div class="button-row">
+          <button id="check-button" onclick="checkAnswer()">Antwort überprüfen</button>
+          <button id="next-button" onclick="nextTask()" style="display:none;">Nächste Aufgabe</button>
+        </div>
+      </div>
+
+      <div id="summary"></div>
+      <div class="results-strip" id="results-strip"></div>
+      <div id="detail-list"></div>
+
+      <div class="button-row">
+        <button id="restart-button" onclick="restartTrainer()" style="display:none;">Neu starten</button>
+      </div>
+
+      <div class="footer">
+        Bereitgestellt zu Unterrichtszwecken. Keine kommerzielle Nutzung. © 2026 Dirk Schieferdecker
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const NUM_TASKS = 10;
+    const units = ["mm", "cm", "dm", "m", "km"];
+    const toMeter = { mm: 0.001, cm: 0.01, dm: 0.1, m: 1, km: 1000 };
+
+    let currentTask = 0;
+    let correctCount = 0;
+    let tasks = [];
+
+    function randomInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function chooseDifferentUnit(fromUnit) {
+      const otherUnits = units.filter(unit => unit !== fromUnit);
+      return otherUnits[randomInt(0, otherUnits.length - 1)];
+    }
+
+    function decimalPlacesForUnit(unit) {
+      if (unit === "km") return randomInt(1, 3);
+      if (unit === "m") return randomInt(0, 2);
+      return randomInt(0, 1);
+    }
+
+    function generateValue(fromUnit) {
+      const decimals = decimalPlacesForUnit(fromUnit);
+      let value;
+
+      if (fromUnit === "km") {
+        value = (randomInt(1, 250) / Math.pow(10, decimals));
+      } else if (fromUnit === "m") {
+        value = (randomInt(5, 5000) / Math.pow(10, decimals));
+      } else if (fromUnit === "dm") {
+        value = (randomInt(10, 4000) / Math.pow(10, decimals));
+      } else if (fromUnit === "cm") {
+        value = (randomInt(10, 8000) / Math.pow(10, decimals));
+      } else {
+        value = randomInt(10, 9000);
+      }
+
+      return Number(value.toFixed(decimals));
+    }
+
+    function convert(value, fromUnit, toUnit) {
+      const meters = value * toMeter[fromUnit];
+      const result = meters / toMeter[toUnit];
+      return Number(result.toFixed(6));
+    }
+
+    function formatNumber(num) {
+      const rounded = Number(num.toFixed(6));
+      return rounded.toString().replace('.', ',');
+    }
+
+    function generateTasks() {
+      tasks = [];
+      for (let i = 0; i < NUM_TASKS; i++) {
+        const fromUnit = units[randomInt(0, units.length - 1)];
+        const toUnit = chooseDifferentUnit(fromUnit);
+        const value = generateValue(fromUnit);
+        const result = convert(value, fromUnit, toUnit);
+        tasks.push({
+          value,
+          fromUnit,
+          toUnit,
+          result,
+          userAnswer: null,
+          correct: false
+        });
+      }
+    }
+
+    function updateProgress() {
+      const progressPercent = (currentTask / NUM_TASKS) * 100;
+      document.getElementById('progress-bar').style.width = progressPercent + '%';
+      document.getElementById('counter').textContent = currentTask < NUM_TASKS
+        ? `Aufgabe ${currentTask + 1} von ${NUM_TASKS}`
+        : `Fertig! ${NUM_TASKS} von ${NUM_TASKS}`;
+      document.getElementById('score').textContent = `Richtig: ${correctCount}`;
+    }
+
+    function renderResultChips() {
+      const strip = document.getElementById('results-strip');
+      strip.innerHTML = tasks.map((task, index) => {
+        let className = 'result-chip';
+        let symbol = '•';
+        if (task.userAnswer !== null) {
+          className += task.correct ? ' correct' : ' incorrect';
+          symbol = task.correct ? '✓' : '✗';
+        }
+        return `<div class="${className}">${index + 1} ${symbol}</div>`;
+      }).join('');
+    }
+
+    function showTask() {
+      const task = tasks[currentTask];
+      document.getElementById('task').innerHTML = `
+        ${formatNumber(task.value)} ${task.fromUnit} = ? ${task.toUnit}
+      `;
+      document.getElementById('target-unit-display').textContent = task.toUnit;
+      document.getElementById('feedback').textContent = '';
+      document.getElementById('feedback').className = '';
+      document.getElementById('answer').value = '';
+      document.getElementById('answer').focus();
+      document.getElementById('check-button').style.display = 'inline-block';
+      document.getElementById('next-button').style.display = 'none';
+      updateProgress();
+      renderResultChips();
+    }
+
+    function checkAnswer() {
+      const answerField = document.getElementById('answer');
+      const raw = answerField.value.trim().replace(',', '.');
+      const input = parseFloat(raw);
+      const task = tasks[currentTask];
+      const feedback = document.getElementById('feedback');
+
+      if (raw === '' || isNaN(input)) {
+        feedback.textContent = 'Bitte gib eine Zahl ein.';
+        feedback.className = 'incorrect';
+        return;
+      }
+
+      task.userAnswer = input;
+
+      if (Math.abs(input - task.result) < 0.0001) {
+        task.correct = true;
+        correctCount++;
+        feedback.textContent = '✓ Richtig! Super umgerechnet!';
+        feedback.className = 'correct';
+      } else {
+        task.correct = false;
+        feedback.textContent = `✗ Noch nicht richtig. Richtige Lösung: ${formatNumber(task.result)} ${task.toUnit}`;
+        feedback.className = 'incorrect';
+      }
+
+      document.getElementById('check-button').style.display = 'none';
+      const nextButton = document.getElementById('next-button');
+      nextButton.style.display = 'inline-block';
+      nextButton.textContent = currentTask === NUM_TASKS - 1 ? 'Zur Auswertung' : 'Nächste Aufgabe';
+      updateProgress();
+      renderResultChips();
+    }
+
+    function nextTask() {
+      currentTask++;
+      if (currentTask < NUM_TASKS) {
+        showTask();
+      } else {
+        showSummary();
+      }
+    }
+
+    function showSummary() {
+      document.getElementById('task-container').style.display = 'none';
+      document.getElementById('restart-button').style.display = 'inline-block';
+      document.getElementById('progress-bar').style.width = '100%';
+      document.getElementById('counter').textContent = `Fertig! ${NUM_TASKS} von ${NUM_TASKS}`;
+      document.getElementById('score').textContent = `Richtig: ${correctCount}`;
+      document.getElementById('summary').innerHTML = `
+        Du hast <span style="color:${correctCount === NUM_TASKS ? '#1e9e55' : '#3657b7'};">${correctCount} von ${NUM_TASKS}</span> Aufgaben richtig gelöst.
+      `;
+
+      document.getElementById('detail-list').innerHTML = tasks.map((task, index) => `
+        <div class="detail-item">
+          <strong>Aufgabe ${index + 1}:</strong>
+          ${formatNumber(task.value)} ${task.fromUnit} = ${formatNumber(task.result)} ${task.toUnit}<br>
+          <strong>Deine Antwort:</strong>
+          ${task.userAnswer !== null ? formatNumber(task.userAnswer) + ' ' + task.toUnit : 'keine Eingabe'}<br>
+          <strong>Status:</strong>
+          <span style="color:${task.correct ? '#1e9e55' : '#d63d5c'}; font-weight:bold;">
+            ${task.correct ? '✓ richtig' : '✗ falsch'}
+          </span>
+        </div>
+      `).join('');
+
+      renderResultChips();
+    }
+
+    function restartTrainer() {
+      currentTask = 0;
+      correctCount = 0;
+      document.getElementById('summary').innerHTML = '';
+      document.getElementById('detail-list').innerHTML = '';
+      document.getElementById('task-container').style.display = 'block';
+      document.getElementById('restart-button').style.display = 'none';
+      generateTasks();
+      showTask();
+    }
+
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'Enter') {
+        const nextVisible = document.getElementById('next-button').style.display !== 'none';
+        if (document.getElementById('task-container').style.display !== 'none') {
+          if (nextVisible) {
+            nextTask();
+          } else {
+            checkAnswer();
+          }
+        }
+      }
+    });
+
+    generateTasks();
+    showTask();
+  </script>
+</body>
+</html>
